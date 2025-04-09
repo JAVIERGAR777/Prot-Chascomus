@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Reporte Municipal</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-dark: #1a2639;
+            --primary-medium: #3e4a61;
+            --primary-light: #d9dad7;
+            --accent-delictivo: #c24e00;
+            --accent-integridad: #8e4162;
+            --accent-emergencia: #2a628f;
+            --light-neutral: #f8f9fa;
+            --dark-text: #212529;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--light-neutral);
+            color: var(--dark-text);
+            line-height: 1.6;
+        }
+        
+        header {
+            background: var(--primary-dark);
+            color: white;
+            padding: 1.8rem 0;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent-delictivo), var(--accent-integridad), var(--accent-emergencia));
+        }
+        
+        h1 {
+            margin: 0;
+            font-size: 2.4rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        
+        .header-subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin-top: 0.5rem;
+        }
+        
+        .current-date {
+            background: rgba(255, 255, 255, 0.1);
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
+        .container {
+            max-width: 1300px;
+            margin: 3rem auto;
+            padding: 0 2rem;
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border-top: 4px solid var(--primary-medium);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+        }
+        
+        .card-title {
+            font-size: 1.5rem;
+            margin-top: 0;
+            margin-bottom: 1.5rem;
+            color: var(--primary-dark);
+            position: relative;
+            display: inline-block;
+        }
+        
+        .card-title::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 0;
+            width: 50px;
+            height: 3px;
+            background: var(--primary-medium);
+        }
+        
+        .form-group {
+            margin-bottom: 2rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.8rem;
+            font-weight: 600;
+            color: var(--primary-dark);
+            font-size: 0.95rem;
+            letter-spacing: 0.3px;
+        }
+        
+        select, input, textarea {
+            width: 100%;
+            padding: 0.9rem 1.2rem;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: all 0.3s;
+            background-color: var(--light-neutral);
+        }
+        
+        select:focus, input:focus, textarea:focus {
+            border-color: var(--primary-medium);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(62, 74, 97, 0.15);
+            background-color: white;
+        }
+        
+        .radio-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.2rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .radio-option {
+            display: flex;
+            align-items: center;
+            background-color: white;
+            padding: 1.2rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 1px solid #e0e0e0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .radio-option::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            transition: all 0.3s;
+        }
+        
+        .radio-option.delictivo::before {
+            background-color: var(--accent-delictivo);
+        }
+        
+        .radio-option.integridad::before {
+            background-color: var(--accent-integridad);
+        }
+        
+        .radio-option.emergencia::before {
+            background-color: var(--accent-emergencia);
+        }
+        
+        .radio-option:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .radio-option input {
+            width: auto;
+            margin-right: 1rem;
+            accent-color: var(--primary-medium);
+        }
+        
+        .radio-option .icon {
+            margin-right: 1rem;
+            font-size: 1.2rem;
+        }
+        
+        .delictivo .icon {
+            color: var(--accent-delictivo);
+        }
+        
+        .integridad .icon {
+            color: var(--accent-integridad);
+        }
+        
+        .emergencia .icon {
+            color: var(--accent-emergencia);
+        }
+        
+        button {
+            background: var(--primary-dark);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+            width: 100%;
+            margin-top: 1rem;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.8rem;
+        }
+        
+        button:hover {
+            background: var(--primary-medium);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+        }
+        
+        #map-container {
+            height: 450px;
+            width: 100%;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+        
+        .hidden-coords {
+            position: absolute;
+            left: -9999px;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+        }
+        
+        .event-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 2rem;
+        }
+        
+        .event-card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+            padding: 1.5rem;
+            transition: all 0.3s;
+            border-top: 3px solid var(--primary-medium);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .event-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+        }
+        
+        .event-card.delictivo::before {
+            background-color: var(--accent-delictivo);
+        }
+        
+        .event-card.integridad::before {
+            background-color: var(--accent-integridad);
+        }
+        
+        .event-card.emergencia::before {
+            background-color: var(--accent-emergencia);
+        }
+        
+        .event-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+        }
+        
+        .event-card h3 {
+            margin-top: 0;
+            margin-bottom: 1rem;
+            color: var(--primary-dark);
+            font-size: 1.2rem;
+        }
+        
+        .event-card p {
+            margin: 0.7rem 0;
+            font-size: 0.95rem;
+        }
+        
+        .event-type {
+            display: inline-block;
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: white;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+        }
+        
+        .type-delictivo {
+            background-color: var(--accent-delictivo);
+        }
+        
+        .type-integridad {
+            background-color: var(--accent-integridad);
+        }
+        
+        .type-emergencia {
+            background-color: var(--accent-emergencia);
+        }
+        
+        .event-location {
+            color: var(--primary-medium);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+        
+        .event-description {
+            color: var(--dark-text);
+            line-height: 1.7;
+            font-size: 0.95rem;
+        }
+        
+        .event-date {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--primary-medium);
+            font-size: 0.9rem;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 2rem;
+            background-color: var(--primary-dark);
+            color: white;
+            margin-top: 4rem;
+            font-size: 0.9rem;
+        }
+        
+        #subcategory-container {
+            display: none;
+            animation: fadeIn 0.4s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .section-divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(0,0,0,0.1), transparent);
+            margin: 3rem 0;
+        }
+        
+        /* Estilos para el marcador personalizado */
+        .custom-marker {
+            background-color: var(--accent-delictivo);
+            width: 28px;
+            height: 28px;
+            display: block;
+            left: -14px;
+            top: -14px;
+            position: relative;
+            border-radius: 28px 28px 0;
+            transform: rotate(45deg);
+            border: 2px solid white;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        .custom-marker.integridad {
+            background-color: var(--accent-integridad);
+        }
+        
+        .custom-marker.emergencia {
+            background-color: var(--accent-emergencia);
+        }
+
+        .custom-marker::after {
+            content: "";
+            width: 12px;
+            height: 12px;
+            margin: 7px 0 0 7px;
+            background-color: white;
+            border-radius: 50%;
+            position: absolute;
+        }
+
+        /* Notificaciones */
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--primary-dark);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 6px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            z-index: 1000;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.4s ease-out;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 1.5rem;
+            }
+            
+            .radio-group {
+                grid-template-columns: 1fr;
+            }
+            
+            .event-list {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .card {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Sistema de Reporte Municipal</h1>
+            <div class="header-subtitle">Plataforma integrada con Google Sheets</div>
+            <div class="current-date" id="current-date"></div>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="card">
+            <h2 class="card-title">Nuevo Reporte</h2>
+            <form id="event-form">
+                <div class="form-group">
+                    <label>Clase de Incidencia</label>
+                    <div class="radio-group" id="main-categories">
+                        <label class="radio-option delictivo">
+                            <input type="radio" name="main-category" value="delictivo" required>
+                            <i class="fas fa-shield-alt icon"></i>
+                            Delictivo-Patrimoniales
+                        </label>
+                        <label class="radio-option integridad">
+                            <input type="radio" name="main-category" value="integridad">
+                            <i class="fas fa-user-shield icon"></i>
+                            Integridad Personal
+                        </label>
+                        <label class="radio-option emergencia">
+                            <input type="radio" name="main-category" value="emergencia">
+                            <i class="fas fa-exclamation-triangle icon"></i>
+                            Emergencias
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="form-group" id="subcategory-container">
+                    <label for="event-type">Tipología Específica</label>
+                    <select id="event-type" required>
+                        <option value="" disabled selected>Seleccione una tipología</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="fecha-hora">Fecha y Hora</label>
+                    <input type="datetime-local" id="fecha-hora" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="event-description">Descripción Detallada</label>
+                    <textarea id="event-description" rows="4" required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>Ubicación Geográfica</label>
+                    <p style="margin-top: -0.5rem; margin-bottom: 1rem; font-size: 0.9rem; color: var(--primary-medium);">
+                        <i class="fas fa-info-circle"></i> Haga clic en el mapa para seleccionar ubicación
+                    </p>
+                    <div id="map-container">
+                        <div id="map"></div>
+                    </div>
+                    <!-- Campos ocultos para coordenadas -->
+                    <input type="text" id="latitude" class="hidden-coords" required>
+                    <input type="text" id="longitude" class="hidden-coords" required>
+                </div>
+                
+                <button type="submit">
+                    <i class="fas fa-paper-plane"></i>
+                    Registrar Incidencia
+                </button>
+            </form>
+        </div>
+        
+        <div class="section-divider"></div>
+        
+        <div class="card">
+            <h2 class="card-title">Últimos 5 Reportes</h2>
+            <div class="event-list" id="events-list">
+                <p style="text-align:center; color:var(--primary-medium);">Cargando reportes...</p>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <div class="container">
+            <p>Sistema de Reporte Municipal &copy; 2023 | Almacenamiento en Google Sheets</p>
+        </div>
+    </footer>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // Configuración Sheetbest
+        const SHEETBEST_API = "https://api.sheetbest.com/sheets/b584cc84-2426-44c1-9bca-bc5765a3cb78";
+        
+        // Tipologías
+        const tipologias = {
+            delictivo: [
+                "Hurto Automotor",
+                "Hurto Motovehicular",
+                "Hurto de Pertenencias",
+                "Robo Automotor",
+                "Robo Motovehicular",
+                "Robo en Vía Pública",
+                "Tentativa de Robo",
+                "Tentativa de Hurto",
+                "Escruche",
+                "Entradera",
+                "Estafa",
+                "Robo a Comercio",
+                "Privación Ilegítima de la Libertad"
+            ],
+            integridad: [
+                "Homicidio",
+                "Tentativa de Homicidio",
+                "Violencia de Género",
+                "Violencia NNyA",
+                "Lesiones",
+                "Amenazas",
+                "Violencia Intrafamiliar",
+                "Tenencia de Estupefacientes"
+            ],
+            emergencia: [
+                "Conflictos Sin Violencia",
+                "Accidentes de Tránsito",
+                "Óbito / Averiguaciones Causales de Muerte",
+                "Actitud Sospechosa",
+                "Alarmas",
+                "Incendio",
+                "Hallazgo",
+                "Suicidio",
+                "Desaparicion / Hallazgo de Persona",
+                "Tenencia de Armas Blancas",
+                "Tenencia/portación ilegítima de arma de fuego"
+            ]
+        };
+
+        // Variables globales
+        let map, marker, currentCategory = null;
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', function() {
+            initMap();
+            loadRecentReports();
+            setupEventListeners();
+            
+            // Establecer fecha/hora actual
+            const now = new Date();
+            const fechaHora = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+            document.getElementById('fecha-hora').value = fechaHora;
+            document.getElementById('current-date').textContent = now.toLocaleDateString('es-AR', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+        });
+
+        function initMap() {
+            map = L.map('map').setView([-34.6037, -58.3816], 13);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            }).addTo(map);
+
+            map.on('click', function(e) {
+                const { lat, lng } = e.latlng;
+                document.getElementById('latitude').value = lat.toFixed(6);
+                document.getElementById('longitude').value = lng.toFixed(6);
+                
+                if (marker) map.removeLayer(marker);
+                
+                const markerClass = currentCategory || 'delictivo';
+                marker = L.marker([lat, lng], {
+                    icon: L.divIcon({
+                        className: 'custom-marker-icon',
+                        html: `<div class="custom-marker ${markerClass}"></div>`,
+                        iconSize: [28, 28],
+                        iconAnchor: [14, 14]
+                    })
+                }).addTo(map);
+            });
+        }
+
+        async function loadRecentReports() {
+            try {
+                const response = await fetch(`${SHEETBEST_API}/tabs/Hoja 1`);
+                const allData = await response.json();
+                
+                // Ordenar por fecha y hora (más recientes primero)
+                const sortedData = allData.sort((a, b) => {
+                    try {
+                        const dateA = new Date(`${a.fecha}T${a.hora || '00:00'}`);
+                        const dateB = new Date(`${b.fecha}T${b.hora || '00:00'}`);
+                        return dateB - dateA;
+                    } catch (e) {
+                        return 0;
+                    }
+                });
+                
+                // Mostrar solo los 5 más recientes
+                displayEvents(sortedData.slice(0, 5));
+                
+            } catch (error) {
+                console.error("Error al cargar reportes:", error);
+                document.getElementById('events-list').innerHTML = `
+                    <p style="text-align:center; color:var(--accent-delictivo);">
+                        Error al cargar los reportes. Intente recargar la página.
+                    </p>
+                `;
+            }
+        }
+
+        function displayEvents(events) {
+            const container = document.getElementById('events-list');
+            
+            if (!events || events.length === 0) {
+                container.innerHTML = '<p style="text-align:center; color:var(--primary-medium);">No hay reportes recientes</p>';
+                return;
+            }
+            
+            container.innerHTML = '';
+            
+            events.forEach(event => {
+                const eventCard = document.createElement('div');
+                eventCard.className = `event-card ${event.categoria || 'delictivo'}`;
+                
+                let typeClass = 'type-delictivo';
+                if (event.categoria === 'integridad') typeClass = 'type-integridad';
+                else if (event.categoria === 'emergencia') typeClass = 'type-emergencia';
+                
+                eventCard.innerHTML = `
+                    <span class="event-type ${typeClass}">${(event.categoria || 'delictivo').toUpperCase()}</span>
+                    <h3>${event.tipo_incidente || 'Incidente no especificado'}</h3>
+                    <p class="event-date">
+                        <i class="far fa-calendar-alt"></i> ${event.fecha || 'Fecha desconocida'}
+                        <span style="margin-left: 1rem;"><i class="far fa-clock"></i> ${event.hora || 'Hora desconocida'}</span>
+                    </p>
+                    <div class="event-description">
+                        <strong>Descripción:</strong> ${event.descripcion || 'No hay descripción disponible'}
+                    </div>
+                `;
+                
+                container.appendChild(eventCard);
+            });
+        }
+
+        function setupEventListeners() {
+            // Categorías principales
+            document.querySelectorAll('input[name="main-category"]').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    currentCategory = this.value;
+                    const subcategorySelect = document.getElementById('event-type');
+                    
+                    subcategorySelect.innerHTML = '<option value="" disabled selected>Seleccione una tipología</option>';
+                    
+                    tipologias[this.value].forEach(tipo => {
+                        const option = document.createElement('option');
+                        option.value = tipo;
+                        option.textContent = tipo;
+                        subcategorySelect.appendChild(option);
+                    });
+                    
+                    document.getElementById('subcategory-container').style.display = 'block';
+                });
+            });
+
+            // Envío de formulario
+            document.getElementById('event-form').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                if (!document.getElementById('latitude').value) {
+                    showNotification('❌ Debe seleccionar una ubicación en el mapa');
+                    return;
+                }
+
+                const fechaHora = document.getElementById('fecha-hora').value;
+                const reporte = {
+                    fecha: fechaHora.split('T')[0],
+                    hora: fechaHora.split('T')[1].substring(0, 5),
+                    categoria: document.querySelector('input[name="main-category"]:checked').value,
+                    tipo_incidente: document.getElementById('event-type').value,
+                    descripcion: document.getElementById('event-description').value,
+                    latitud: document.getElementById('latitude').value,
+                    longitud: document.getElementById('longitude').value
+                };
+
+                try {
+                    const response = await fetch(SHEETBEST_API, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(reporte)
+                    });
+
+                    if (response.ok) {
+                        showNotification('✅ Reporte enviado correctamente');
+                        this.reset();
+                        document.getElementById('subcategory-container').style.display = 'none';
+                        if (marker) map.removeLayer(marker);
+                        
+                        // Restablecer fecha/hora
+                        const now = new Date();
+                        const newFechaHora = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+                        document.getElementById('fecha-hora').value = newFechaHora;
+                        
+                        // Recargar reportes
+                        await loadRecentReports();
+                    } else {
+                        throw new Error('Error en la respuesta');
+                    }
+                } catch (error) {
+                    console.error("Error:", error);
+                    showNotification('❌ Error al enviar el reporte');
+                }
+            });
+        }
+
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.transform = 'translateY(0)';
+                notification.style.opacity = '1';
+            }, 50);
+            
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transform = 'translateY(-20px)';
+                setTimeout(() => notification.remove(), 400);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
