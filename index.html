@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Reporte Municipal</title>
+    <title>Sistema de Reporte de Incidentes Municipales</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -461,8 +461,8 @@
 <body>
     <header>
         <div class="container">
-            <h1>Sistema de Reporte Municipal</h1>
-            <div class="header-subtitle">Plataforma integrada con Google Sheets</div>
+            <h1>Sistema de Reportes de Incidentes</h1>
+            <div class="header-subtitle"> Secretaría de Seguridad  |  Municipalidad de Chascomús</div>
             <div class="current-date" id="current-date"></div>
         </div>
     </header>
@@ -541,7 +541,7 @@
     
     <footer>
         <div class="container">
-            <p>Sistema de Reporte Municipal &copy; 2023 | Almacenamiento en Google Sheets</p>
+            <p>Sistema de Reporte de Incidentes         |         Municipalidad de Chascomús</p>
         </div>
     </footer>
 
@@ -614,7 +614,7 @@
         });
 
         function initMap() {
-            map = L.map('map').setView([-34.6037, -58.3816], 13);
+            map = L.map('map').setView([-35.5712, -58.0091], 13);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
             }).addTo(map);
