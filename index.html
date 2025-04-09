@@ -17,6 +17,50 @@
             --light-neutral: #f8f9fa;
             --dark-text: #212529;
         }
+
+        
+
+        /* Radio button original (ocultamos el default) */
+.radio-option input[type="radio"] {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    width: 12px;  /* Tamaño del punto */
+    height: 12px;
+    border: 3px solid #070707; /* Color del borde (gris) */
+    border-radius: 50%;
+    margin-right: 12px;
+    cursor: pointer;
+    position: relative;
+    vertical-align: middle; /* Alinea con el ícono */
+}
+
+/* Punto seleccionado (sin afectar íconos) */
+.radio-option input[type="radio"]:checked {
+    background-color: var(--primary-dark); /* Color de fondo */
+    border-color: var(--primary-dark);
+    box-shadow: 0 0 0 2px white, 0 0 0 4px var(--primary-dark); /* Efecto de anillo */
+}
+
+/* Colores por categoría (solo para el punto) */
+.radio-option.delictivo input[type="radio"]:checked {
+    background-color: var(--accent-delictivo);
+    border-color: var(--accent-delictivo);
+    box-shadow: 0 0 0 2px white, 0 0 0 4px var(--accent-delictivo);
+}
+
+.radio-option.integridad input[type="radio"]:checked {
+    background-color: var(--accent-integridad);
+    border-color: var(--accent-integridad);
+    box-shadow: 0 0 0 2px white, 0 0 0 4px var(--accent-integridad);
+}
+
+.radio-option.emergencia input[type="radio"]:checked {
+    background-color: var(--accent-emergencia);
+    border-color: var(--accent-emergencia);
+    box-shadow: 0 0 0 2px white, 0 0 0 4px var(--accent-emergencia);
+}
+        
         
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -63,10 +107,10 @@
         .current-date {
             background: rgba(255, 255, 255, 0.1);
             display: inline-block;
-            padding: 0.5rem 1rem;
-            border-radius: 50px;
-            margin-top: 1rem;
-            font-size: 0.9rem;
+            padding: 1rem 1rem;
+            border-radius: 25px;
+            margin-top: 2rem;
+            font-size: 1.6rem;
             font-weight: 500;
         }
         
@@ -242,7 +286,7 @@
             border-radius: 8px;
             overflow: hidden;
             margin-bottom: 1.5rem;
-            border: 1px solid #e0e0e0;
+            border: 1px solid #0c0b0b;
             box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
         }
         
