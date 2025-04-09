@@ -20,29 +20,29 @@
 
         
 
-        /* Radio button original (ocultamos el default) */
+
 .radio-option input[type="radio"] {
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
-    width: 12px;  /* Tamaño del punto */
+    width: 12px; 
     height: 12px;
-    border: 3px solid #070707; /* Color del borde (gris) */
+    border: 3px solid #070707; 
     border-radius: 50%;
     margin-right: 12px;
     cursor: pointer;
     position: relative;
-    vertical-align: middle; /* Alinea con el ícono */
+    vertical-align: middle; 
 }
 
-/* Punto seleccionado (sin afectar íconos) */
+
 .radio-option input[type="radio"]:checked {
-    background-color: var(--primary-dark); /* Color de fondo */
+    background-color: var(--primary-dark);
     border-color: var(--primary-dark);
-    box-shadow: 0 0 0 2px white, 0 0 0 4px var(--primary-dark); /* Efecto de anillo */
+    box-shadow: 0 0 0 2px white, 0 0 0 4px var(--primary-dark); 
 }
 
-/* Colores por categoría (solo para el punto) */
+
 .radio-option.delictivo input[type="radio"]:checked {
     background-color: var(--accent-delictivo);
     border-color: var(--accent-delictivo);
@@ -430,7 +430,7 @@
             margin: 3rem 0;
         }
         
-        /* Estilos para el marcador personalizado */
+
         .custom-marker {
             background-color: var(--accent-delictivo);
             width: 28px;
@@ -463,7 +463,7 @@
             position: absolute;
         }
 
-        /* Notificaciones */
+
         .notification {
             position: fixed;
             bottom: 20px;
@@ -561,7 +561,7 @@
                     <div id="map-container">
                         <div id="map"></div>
                     </div>
-                    <!-- Campos ocultos para coordenadas -->
+
                     <input type="text" id="latitude" class="hidden-coords" required>
                     <input type="text" id="longitude" class="hidden-coords" required>
                 </div>
@@ -591,10 +591,10 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // Configuración Sheetbest
+
         const SHEETBEST_API = "https://api.sheetbest.com/sheets/b584cc84-2426-44c1-9bca-bc5765a3cb78";
         
-        // Tipologías
+
         const tipologias = {
             delictivo: [
                 "Hurto Automotor",
@@ -636,16 +636,16 @@
             ]
         };
 
-        // Variables globales
+
         let map, marker, currentCategory = null;
 
-        // Inicialización
+
         document.addEventListener('DOMContentLoaded', function() {
             initMap();
             loadRecentReports();
             setupEventListeners();
             
-            // Establecer fecha/hora actual
+
             const now = new Date();
             const fechaHora = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
             document.getElementById('fecha-hora').value = fechaHora;
@@ -687,7 +687,7 @@
                 const response = await fetch(`${SHEETBEST_API}/tabs/Hoja 1`);
                 const allData = await response.json();
                 
-                // Ordenar por fecha y hora (más recientes primero)
+
                 const sortedData = allData.sort((a, b) => {
                     try {
                         const dateA = new Date(`${a.fecha}T${a.hora || '00:00'}`);
@@ -698,7 +698,7 @@
                     }
                 });
                 
-                // Mostrar solo los 5 más recientes
+
                 displayEvents(sortedData.slice(0, 5));
                 
             } catch (error) {
@@ -746,7 +746,7 @@
         }
 
         function setupEventListeners() {
-            // Categorías principales
+
             document.querySelectorAll('input[name="main-category"]').forEach(radio => {
                 radio.addEventListener('change', function() {
                     currentCategory = this.value;
@@ -765,7 +765,7 @@
                 });
             });
 
-            // Envío de formulario
+
             document.getElementById('event-form').addEventListener('submit', async function(e) {
                 e.preventDefault();
                 
@@ -798,12 +798,12 @@
                         document.getElementById('subcategory-container').style.display = 'none';
                         if (marker) map.removeLayer(marker);
                         
-                        // Restablecer fecha/hora
+
                         const now = new Date();
                         const newFechaHora = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
                         document.getElementById('fecha-hora').value = newFechaHora;
                         
-                        // Recargar reportes
+
                         await loadRecentReports();
                     } else {
                         throw new Error('Error en la respuesta');
